@@ -1,19 +1,21 @@
-package types
+package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"backend/function/member"
+)
 
 func RegisterRouter(r *gin.Engine) {
 	g := r.Group("/api/v1")
 
 	// 成员管理
-	g.POST("/member/create")
-	g.GET("/member")
-	g.GET("/member/list")
-	g.POST("/member/update")
+/* 	g.GET("/member")
+	g.GET("/member/list") */
+	g.POST("/member/create", member.CreateMember)
+/* 	g.POST("/member/update")
 	g.POST("/member/delete")
 
 	// 登录
-
 	g.POST("/auth/login")
 	g.POST("/auth/logout")
 	g.GET("/auth/whoami")
@@ -29,6 +31,6 @@ func RegisterRouter(r *gin.Engine) {
 
 	// 抢课
 	g.POST("/student/book_course")
-	g.GET("/student/course")
+	g.GET("/student/course") */
 
 }

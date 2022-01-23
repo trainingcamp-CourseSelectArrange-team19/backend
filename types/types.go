@@ -6,11 +6,11 @@ package types
 
 // 通用结构
 
-type ErrNo int
+type ErrNo = int
 
 const (
 	OK                 ErrNo = 0
-	ParamInvalid       ErrNo = 1   // 参数不合法
+	ParamInvalid       ErrNo = 1  // 参数不合法
 	UserHasExisted     ErrNo = 2   // 该 Username 已存在
 	UserHasDeleted     ErrNo = 3   // 用户已删除
 	UserNotExisted     ErrNo = 4   // 用户不存在
@@ -50,7 +50,7 @@ type TCourse struct {
 
 // 成员管理
 
-type UserType int
+type UserType = int
 
 const (
 	Admin   UserType = 1

@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"techtrainingcamp-courseSelectArrange/tools"
+	"backend/tools"
 
 	"github.com/go-sql-driver/mysql"
 )

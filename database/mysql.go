@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync/atomic"
-	"techtrainingcamp-courseSelectArrange/tools"
+	"backend/tools"
 
 	_ "github.com/go-sql-driver/mysql"
 )

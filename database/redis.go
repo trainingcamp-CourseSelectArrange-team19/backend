@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"techtrainingcamp-courseSelectArrange/tools"
+	"backend/tools"
 	"time"
 
 	"github.com/go-redis/redis/v8"
