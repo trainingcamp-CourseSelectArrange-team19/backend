@@ -3,6 +3,8 @@ package member
 import (
 	"github.com/gin-gonic/gin"
 	"backend/types"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 /*
@@ -12,7 +14,6 @@ type CreateMemberRequest struct {
 	Password string   // required，同时包括大小写、数字，长度不少于 8 位 不超过 20 位
 	UserType UserType // required, 枚举值
 }
-
 type CreateMemberResponse struct {
 	Code ErrNo
 	Data struct {
@@ -20,6 +21,7 @@ type CreateMemberResponse struct {
 	}
 } 
 */
+
 func CreateMember(c *gin.Context) {
 	/* 参数不正确 提前设置返回值 */
 	/* 发送来的不符合要求 */
@@ -66,6 +68,16 @@ func CreateMember(c *gin.Context) {
 		b.Code = types.PermDenied
 		c.JSON(200, b)
 	}
+
+	db, err := sql.Open("mysql", "root:wbr1219.@tcp(127.0.0.1:3306)/hello")
+
+	if err != nil {
+	
+	log.Fatal(err)
+	
+	}
+	
+	defer db.Close()
 
 
 }

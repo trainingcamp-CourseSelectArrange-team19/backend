@@ -266,3 +266,8 @@ type GetStudentCourseResponse struct {
 		CourseList []TCourse
 	}
 }
+
+type SQLEx = string
+const (
+	Insert SQLEx = "INSERT INTO "
+)
