@@ -3,7 +3,6 @@ package member
 import (
 	"github.com/gin-gonic/gin"
 	"backend/types"
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -69,15 +68,7 @@ func CreateMember(c *gin.Context) {
 		c.JSON(200, b)
 	}
 
-	db, err := sql.Open("mysql", "root:wbr1219.@tcp(127.0.0.1:3306)/hello")
-
-	if err != nil {
 	
-	log.Fatal(err)
-	
-	}
-	
-	defer db.Close()
 
 
 }
