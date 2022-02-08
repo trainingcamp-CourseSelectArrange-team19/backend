@@ -3,6 +3,7 @@ package member
 import (
 	"github.com/gin-gonic/gin"
 	"backend/types"
+	"backend/database"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -63,11 +64,21 @@ func CreateMember(c *gin.Context) {
 		return
 	}
 
-	if UserType == types.Admin {
+	if UserType != types.Admin {
 		b.Code = types.PermDenied
 		c.JSON(200, b)
+		return
 	}
 
+	_, u := database.GetUserInfoByName(Username)
+	if (u.Id != 0) {
+		b.Code = types.UserHasExisted
+		c.JSON(200, b)
+		return
+	} 
 
-
+	database.CreateUser(Username, Nickname, Password, UserType)
+	b.Code = types.OK
+	c.JSON(200, b)
+	
 }

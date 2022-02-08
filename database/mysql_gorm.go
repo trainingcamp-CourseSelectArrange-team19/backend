@@ -52,7 +52,7 @@ func (StudentSchedule) TableName() string {
 var db *gorm.DB
 
 //连接数据库
-func connect() {
+func Connect() {
 	var err error
 	dsn := "root:bytedancecamp@tcp(180.184.65.192:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = gorm.Open(mysql.Open(dsn))
@@ -77,12 +77,19 @@ func CreateUser(Username string, Nickname string, Password string, Usertype int)
 }
 
 //根据用户名获取单个用户信息
-func GetOneUserInfo(Username string) (string, *User) {
+func GetUserInfoByName(Username string) (string, *User) {
 	TempUser := new(User)
 	if err := db.First(TempUser, "name = ?", Username).Error; err != nil {
 		return fmt.Sprintf("query failed ,err is %s", err), TempUser
 	}
-	return "", TempUser
+	return "Success", TempUser
+}
+func GetUserInfoById(ID string) *User {
+	TempUser := new(User)
+	if err := db.First(TempUser, "id = ?", ID).Error; err != nil {
+		return TempUser
+	}
+	return TempUser	
 }
 
 //获取所有用户信息，包括已删除的用户，
@@ -100,8 +107,9 @@ func GetAllValUserInfo() (int64, error, []User) {
 }
 
 //更新用户昵称
-func UpdateUserNickname(user User, Nickname string) error {
-	result := db.Model(&user).Update("nickname", Nickname)
+func UpdateUserNickname(ID string, Nickname string) error {
+	user := GetUserInfoById(ID)
+	result := db.Model(&user).Where("id = ?", user.Id).Update("nickname", Nickname)
 	return result.Error
 }
 
