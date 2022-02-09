@@ -43,6 +43,8 @@ type StudentSchedule struct {
 	ID        int
 	StudentID int
 	CourseID  int
+	CourseName string
+	TeacherID int
 }
 
 func (StudentSchedule) TableName() string {
@@ -149,6 +151,15 @@ func GetOneCourse(name string) (string, *Course) {
 	return "", TempCourse
 }
 
+//获取单个课程名称
+func GetOneCourseName(ID int) (string, *Course) {
+	TempCourse := new(Course)
+	if err := db.First(TempCourse, "id = ?", ID).Error; err != nil {
+		return fmt.Sprintf("query failed ,err is %s", err), TempCourse
+	}
+	return "", TempCourse
+}
+
 //获取所有用户信息，包括已删除的用户，
 func GetAllCourse() (int64, []Course) {
 	var courses []Course
@@ -187,11 +198,22 @@ func GetTeacherCourse(teacherID int) (int64, error, []TeacherSchedule) {
 	return result.RowsAffected, result.Error, teacherSchedule
 }
 
+//先使用GetOneUserInfo得到老师id，再使用该函数
+func GetCourseTeacher(courseID int) (string, *TeacherSchedule) {
+	TempTeacherSchedule := new(TeacherSchedule)
+	if err := db.First(TempTeacherSchedule, "course_id = ?", courseID).Error; err != nil {
+		return fmt.Sprintf("query failed ,err is %s", err), TempTeacherSchedule
+	}
+	return "", TempTeacherSchedule
+}
+
 //创建学生课表
-func CreateStudentCourse(studentID int, courseID int) string {
+func CreateStudentCourse(studentID int, courseID int, courseName string, teacherID int) string {
 	newStudentSchedule := &StudentSchedule{
 		StudentID: studentID,
 		CourseID:  courseID,
+		CourseName: courseName,
+		TeacherID:  teacherID,
 	}
 	if err := db.Create(newStudentSchedule).Error; err != nil {
 		return fmt.Sprintf("create failed, err is %s", err)

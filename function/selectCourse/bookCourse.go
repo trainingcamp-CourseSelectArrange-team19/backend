@@ -25,11 +25,16 @@ func InitRedisConfig() {
 	}
 	redisConn := redisPool.Get()
 	defer redisConn.Close()
-	_, err = redisConn.Do("DEL", "seckill:studentsID")
-	if err != nil {
-		tools.LogMsg(err)
-		panic(err)
+	val, err1 := redis.Strings(redisConn.Do("KEYS", "*"))
+	if err1 != nil {
+		tools.LogMsg(err1)
+		panic(err1)
 	}
+	redisConn.Send("MULTI")
+	for i, _ := range val{
+		redisConn.Send("DEL", val[i])
+	}
+	redisConn.Do("EXEC")
 	for ind := 0 ; ind < len(users) ; ind++{
 		_, err := redis.Int64(redisConn.Do("SADD", "seckill:studentsID", strconv.Itoa(users[ind].Id)))
 		if err != nil {
@@ -44,11 +49,6 @@ func InitRedisConfig() {
 			panic(err)
 		}
 		_, err = redisConn.Do("SET", "seckill:" + strconv.Itoa(courses[ind].Id) + ":end", 0)
-		if err != nil {
-			tools.LogMsg(err)
-			panic(err)
-		}
-		_, err = redisConn.Do("DEL", "seckill:" + strconv.Itoa(courses[ind].Id) + ":uids")
 		if err != nil {
 			tools.LogMsg(err)
 			panic(err)
