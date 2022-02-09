@@ -10,9 +10,11 @@ import (
 )
 var (
 	redisPool *redis.Pool
+	userSetCount int
 )
 func InitRedisConfig() {
 	redisPool = NewPool()
+	userSetCount = 0
 	_, err, users := database.GetAllValStudentInfo()
 	if err != nil{
 		tools.LogMsg(err)
@@ -36,7 +38,11 @@ func InitRedisConfig() {
 	}
 	redisConn.Do("EXEC")
 	for ind := 0 ; ind < len(users) ; ind++{
-		_, err := redis.Int64(redisConn.Do("SADD", "seckill:studentsID", strconv.Itoa(users[ind].Id)))
+		whichPart := ind / 5000
+		if whichPart > userSetCount{
+			userSetCount = whichPart
+		}
+		_, err := redis.Int64(redisConn.Do("SADD", "studentsID:" + strconv.Itoa(whichPart), strconv.Itoa(users[ind].Id)))
 		if err != nil {
 			tools.LogMsg(err)
 			panic(err)
@@ -79,12 +85,19 @@ func SelectCourse(c *gin.Context) {
 		c.JSON(200, b)
 		return
 	}
-	studentExist, err := redis.Int64(redisConn.Do("sismember", "seckill:studentsID", StudentID))
-	if err != nil {
-		tools.LogMsg(err)
-		panic(err)
+	found := false
+	for ind := 0 ; ind <= userSetCount ; ind++{
+		studentExist, err := redis.Int64(redisConn.Do("sismember", "studentsID:" + strconv.Itoa(ind), StudentID))
+		if err != nil {
+			tools.LogMsg(err)
+			panic(err)
+		}
+		if studentExist > 0{
+			found = true
+			break
+		}
 	}
-	if studentExist <= 0{
+	if !found {
 		b.Code = types.StudentNotExisted
 		c.JSON(200, b)
 		return

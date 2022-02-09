@@ -38,6 +38,14 @@ func FindCourse(c *gin.Context) {
 		panic(err)
 	}
 	for i, _ := range val{
+		count, err, _ := database.GetStudentCourseAbsent(StudentID, val[i])
+		if err != nil {
+			tools.LogMsg(err)
+			panic(err)
+		}
+		if count > 0 {
+			continue
+		}
 		_, courseFound := database.GetOneCourseName(val[i])
 		_, teacherFound := database.GetCourseTeacher(val[i])
 		database.CreateStudentCourse(StudentID, val[i], courseFound.Name, teacherFound.TeacherID)

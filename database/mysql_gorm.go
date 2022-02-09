@@ -228,6 +228,14 @@ func GetStudentCourse(studentID int) (int64, error, []StudentSchedule) {
 	return result.RowsAffected, result.Error, studentSchedule
 }
 
+//查看是否已存在该课
+func GetStudentCourseAbsent(studentID int, courseID int) (int64, error, []StudentSchedule) {
+	var studentSchedule []StudentSchedule
+	result := db.Where("student_id = ? and course_id = ?", studentID, courseID).Find(&studentSchedule)
+	return result.RowsAffected, result.Error, studentSchedule
+}
+
+
 //func main() {
 //	connect()
 //	res := CreateUser("aaa", "张三", "asdfasdf", 2)
