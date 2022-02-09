@@ -54,7 +54,8 @@ var db *gorm.DB
 //连接数据库
 func Connect() {
 	var err error
-	dsn := "root:bytedancecamp@tcp(180.184.65.192:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
+	//dsn := "root:bytedancecamp@tcp(180.184.65.192:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:ru19870528@tcp(127.0.0.1:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = gorm.Open(mysql.Open(dsn))
 	if err != nil {
 		panic(fmt.Sprintf("open mysql failed, err is %s", err))
@@ -106,6 +107,13 @@ func GetAllValUserInfo() (int64, error, []User) {
 	return result.RowsAffected, result.Error, users
 }
 
+//获取所有有效的学生，不包括已删除的用户，
+func GetAllValStudentInfo() (int64, error, []User) {
+	var users []User
+	result := db.Where("is_valid = ? and type = ?", "1", "2").Find(&users)
+	return result.RowsAffected, result.Error, users
+}
+
 //更新用户昵称
 func UpdateUserNickname(ID string, Nickname string) error {
 	user := GetUserInfoById(ID)
@@ -139,6 +147,13 @@ func GetOneCourse(name string) (string, *Course) {
 		return fmt.Sprintf("query failed ,err is %s", err), TempCourse
 	}
 	return "", TempCourse
+}
+
+//获取所有用户信息，包括已删除的用户，
+func GetAllCourse() (int64, []Course) {
+	var courses []Course
+	rows := db.Find(&courses).RowsAffected
+	return rows, courses
 }
 
 //绑定老师和课程

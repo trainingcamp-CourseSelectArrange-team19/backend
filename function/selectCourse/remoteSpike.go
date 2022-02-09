@@ -15,9 +15,12 @@ const LuaScript = `
 
 		-- 存储秒杀成功的用户id的集合的key
 		local bought_users_key = 'seckill:' .. course_id .. ':uids'
+
+		-- 存储用户抢到的课
+		local courses_key = 'courses:' .. user_id .. ':uids'
+		
 		--判断该商品是否秒杀结束
 		local is_end = redis.call('get',end_product_key)
-
 		if  is_end and tonumber(is_end) == 1 then
     		return -2
 		end
@@ -34,13 +37,14 @@ const LuaScript = `
 		-- 如果库存<=0,则返回-1
 		if not stock or tonumber(stock) <=0 then
     		redis.call("set",end_product_key,"1")
+			redis.call("del",bought_users_key)
     		return -1
 		end
 
-		-- 减库存,并且把用户的id添加进已购买用户set里
+		-- 减库存,并且把用户的id添加进已购买用户set里,并给用户添加课程
 		redis.call("decr",product_stock_key)
 		redis.call("sadd",bought_users_key,user_id)
-
+		redis.call("sadd",courses_key,course_id)
 		return 1
 `
 

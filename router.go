@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/function/selectCourse"
 	"github.com/gin-gonic/gin"
 	"backend/function/member"
 )
@@ -28,9 +29,9 @@ func RegisterRouter(r *gin.Engine) {
 	g.POST("/teacher/unbind_course")
 	g.GET("/teacher/get_course")
 	g.POST("/course/schedule")
-
+*/
 	// 抢课
-	g.POST("/student/book_course")
-	g.GET("/student/course") */
+	g.POST("/student/book_course", selectCourse.SelectCourse)
+	//g.GET("/student/course")
 
 }
