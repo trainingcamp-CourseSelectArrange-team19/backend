@@ -69,32 +69,21 @@ func SelectCourse(c *gin.Context) {
 	StudentID, CourseID := arg.StudentID, arg.CourseID
 	redisConn := redisPool.Get()
 	defer redisConn.Close()
-	courseExist, err := redisConn.Do("GET", "seckill:" + CourseID + ":end")
-	if err != nil {
-		tools.LogMsg(err)
-		panic(err)
-	}
-	if courseExist == nil{
+	success := RemoteDeductionStock(redisConn, CourseID, StudentID)
+	if success == 1 {
+		b.Code = types.OK
+		c.JSON(200, b)
+	} else if success == -1 {
 		b.Code = types.CourseNotExisted
 		c.JSON(200, b)
-		return
-	}
-	studentExist, err1 := redis.Int64(redisConn.Do("BF.EXISTS", "studentsID", StudentID))
-	if err1 != nil {
-		tools.LogMsg(err1)
-		panic(err1)
-	}
-	if studentExist <= 0 {
+	} else  if success == -3{
 		b.Code = types.StudentNotExisted
-		c.JSON(200, b)
-		return
-	}
-	success := RemoteDeductionStock(redisConn, CourseID, StudentID)
-	if success {
-		b.Code = types.OK
 		c.JSON(200, b)
 	} else {
 		b.Code = types.CourseNotAvailable
 		c.JSON(200, b)
 	}
+}
+func Pong(c *gin.Context) {
+	c.JSON(200, gin.H{"message": "pong"})
 }

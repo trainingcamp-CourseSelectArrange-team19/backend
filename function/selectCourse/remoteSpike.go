@@ -1,7 +1,6 @@
 package selectCourse
 
 import (
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -15,12 +14,20 @@ const LuaScript = `
 
 		-- 存储秒杀成功的用户id的集合的key
 		local bought_users_key = 'seckill:' .. course_id .. ':uids'
-
+		local students_list = 'studentsID'
 		-- 存储用户抢到的课
 		local courses_key = 'courses:' .. user_id .. ':uids'
-		
+		-- 判断学生是否存在
+		local is_student = redis.call('bf.exists',students_list,user_id)
+		if is_student <= 0 then
+			return -3
+		end
 		--判断该商品是否秒杀结束
 		local is_end = redis.call('get',end_product_key)
+		-- 判断课程是否存在
+		if not is_end then
+			return -1
+		end
 		if  is_end and tonumber(is_end) == 1 then
     		return -2
 		end
@@ -65,13 +72,13 @@ func NewPool() *redis.Pool {
 }
 
 //远端统一扣库存
-func RemoteDeductionStock(conn redis.Conn, cid string, uid string) bool {
+func RemoteDeductionStock(conn redis.Conn, cid string, uid string) int {
 	lua := redis.NewScript(1, LuaScript)
 	result, err := redis.Int(lua.Do(conn, cid, uid))
-	fmt.Println(result)
+	//fmt.Println(result)
 	if err != nil {
 		panic(err.Error())
-		return false
+		return -2
 	}
-	return result == 1
+	return result
 }
