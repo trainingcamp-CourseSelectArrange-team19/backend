@@ -25,31 +25,7 @@ func FindCourse(c *gin.Context) {
 		tools.LogMsg(err1)
 		panic(err1)
 	}
-	redisConn := redisPool.Get()
-	defer redisConn.Close()
-	val, err := redis.Ints(redisConn.Do("SMEMBERS", "courses:" + strconv.Itoa(StudentID) + ":uids"))
-	if err != nil {
-		tools.LogMsg(err)
-		panic(err)
-	}
-	_, err = redisConn.Do("DEL", "courses:" + strconv.Itoa(StudentID) + ":uids")
-	if err != nil {
-		tools.LogMsg(err)
-		panic(err)
-	}
-	for i, _ := range val{
-		count, err, _ := database.GetStudentCourseAbsent(StudentID, val[i])
-		if err != nil {
-			tools.LogMsg(err)
-			panic(err)
-		}
-		if count > 0 {
-			continue
-		}
-		_, courseFound := database.GetOneCourseName(val[i])
-		_, teacherFound := database.GetCourseTeacher(val[i])
-		database.CreateStudentCourse(StudentID, val[i], courseFound.Name, teacherFound.TeacherID)
-	}
+	InsertSchedule(arg.StudentID)
 	rows, err2, schedules := database.GetStudentCourse(StudentID)
 	if err2 != nil {
 		tools.LogMsg(err2)
@@ -67,5 +43,38 @@ func FindCourse(c *gin.Context) {
 	} else {
 		b.Code = types.StudentHasNoCourse
 		c.JSON(200, b)
+	}
+}
+
+func InsertSchedule(StudentID string){
+	redisConn := redisPool.Get()
+	defer redisConn.Close()
+	val, err := redis.Ints(redisConn.Do("SMEMBERS", "courses:" + StudentID + ":uids"))
+	if err != nil {
+		tools.LogMsg(err)
+		panic(err)
+	}
+	_, err = redisConn.Do("DEL", "courses:" + StudentID + ":uids")
+	if err != nil {
+		tools.LogMsg(err)
+		panic(err)
+	}
+	SID, err1 := strconv.Atoi(StudentID)
+	if err1 != nil {
+		tools.LogMsg(err1)
+		panic(err1)
+	}
+	for i, _ := range val{
+		count, err, _ := database.GetStudentCourseAbsent(SID, val[i])
+		if err != nil {
+			tools.LogMsg(err)
+			panic(err)
+		}
+		if count > 0 {
+			continue
+		}
+		_, courseFound := database.GetOneCourseName(val[i])
+		_, teacherFound := database.GetCourseTeacher(val[i])
+		database.CreateStudentCourse(SID, val[i], courseFound.Name, teacherFound.TeacherID)
 	}
 }

@@ -57,8 +57,8 @@ var db *gorm.DB
 //连接数据库
 func Connect() {
 	var err error
-	dsn := "root:bytedancecamp@tcp(180.184.65.192:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
-	//dsn := "root:ru19870528@tcp(127.0.0.1:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
+	//dsn := "root:bytedancecamp@tcp(180.184.65.192:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:ru19870528@tcp(127.0.0.1:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = gorm.Open(mysql.Open(dsn))
 	if err != nil {
 		panic(fmt.Sprintf("open mysql failed, err is %s", err))

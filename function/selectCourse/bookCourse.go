@@ -4,15 +4,18 @@ import (
 	"backend/database"
 	"backend/tools"
 	"backend/types"
+	"github.com/deckarep/golang-set"
 	"github.com/garyburd/redigo/redis"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
 var (
-	redisPool *redis.Pool
+	redisPool  *redis.Pool
+	SuccessSet mapset.Set
 )
 func InitRedisConfig() {
 	redisPool = NewPool()
+	SuccessSet = mapset.NewSet()
 	_, err, users := database.GetAllValStudentInfo()
 	if err != nil{
 		tools.LogMsg(err)
@@ -72,6 +75,7 @@ func SelectCourse(c *gin.Context) {
 	success := RemoteDeductionStock(redisConn, CourseID, StudentID)
 	if success == 1 {
 		b.Code = types.OK
+		SuccessSet.Add(StudentID)
 		c.JSON(200, b)
 	} else if success == -1 {
 		b.Code = types.CourseNotExisted
