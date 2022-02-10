@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -40,11 +41,11 @@ func (TeacherSchedule) TableName() string {
 }
 
 type StudentSchedule struct {
-	ID        int
-	StudentID int
-	CourseID  int
+	ID         int
+	StudentID  int
+	CourseID   int
 	CourseName string
-	TeacherID int
+	TeacherID  int
 }
 
 func (StudentSchedule) TableName() string {
@@ -56,8 +57,8 @@ var db *gorm.DB
 //连接数据库
 func Connect() {
 	var err error
-	//dsn := "root:bytedancecamp@tcp(180.184.65.192:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
-	dsn := "root:ru19870528@tcp(127.0.0.1:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:bytedancecamp@tcp(180.184.65.192:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
+	//dsn := "root:ru19870528@tcp(127.0.0.1:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = gorm.Open(mysql.Open(dsn))
 	if err != nil {
 		panic(fmt.Sprintf("open mysql failed, err is %s", err))
@@ -92,7 +93,7 @@ func GetUserInfoById(ID string) *User {
 	if err := db.First(TempUser, "id = ?", ID).Error; err != nil {
 		return TempUser
 	}
-	return TempUser	
+	return TempUser
 }
 
 //获取所有用户信息，包括已删除的用户，
@@ -117,8 +118,7 @@ func GetAllValStudentInfo() (int64, error, []User) {
 }
 
 //更新用户昵称
-func UpdateUserNickname(ID string, Nickname string) error {
-	user := GetUserInfoById(ID)
+func UpdateUserNickname(user User, Nickname string) error {
 	result := db.Model(&user).Where("id = ?", user.Id).Update("nickname", Nickname)
 	return result.Error
 }
@@ -210,8 +210,8 @@ func GetCourseTeacher(courseID int) (string, *TeacherSchedule) {
 //创建学生课表
 func CreateStudentCourse(studentID int, courseID int, courseName string, teacherID int) string {
 	newStudentSchedule := &StudentSchedule{
-		StudentID: studentID,
-		CourseID:  courseID,
+		StudentID:  studentID,
+		CourseID:   courseID,
 		CourseName: courseName,
 		TeacherID:  teacherID,
 	}
@@ -234,7 +234,6 @@ func GetStudentCourseAbsent(studentID int, courseID int) (int64, error, []Studen
 	result := db.Where("student_id = ? and course_id = ?", studentID, courseID).Find(&studentSchedule)
 	return result.RowsAffected, result.Error, studentSchedule
 }
-
 
 //func main() {
 //	connect()
