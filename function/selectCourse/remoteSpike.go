@@ -25,7 +25,7 @@ const LuaScript = `
     		return -2
 		end
 		-- 判断用户是否秒杀过
-		local is_in = redis.call('sismember',bought_users_key,user_id)
+		local is_in = redis.call('bf.exists',bought_users_key,user_id)
 
 		if is_in > 0 then
     		return 0
@@ -43,7 +43,7 @@ const LuaScript = `
 
 		-- 减库存,并且把用户的id添加进已购买用户set里,并给用户添加课程
 		redis.call("decr",product_stock_key)
-		redis.call("sadd",bought_users_key,user_id)
+		redis.call("bf.add",bought_users_key,user_id)
 		redis.call("sadd",courses_key,course_id)
 		return 1
 `
