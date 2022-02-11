@@ -38,6 +38,7 @@ func InitRedisConfig() {
 		redisConn.Send("DEL", val[i])
 	}
 	redisConn.Do("EXEC")
+	redisConn.Do("BF.reserve", "studentsID", "0.01", "500000")
 	for ind := 0 ; ind < len(users) ; ind++{
 		_, err := redis.Int64(redisConn.Do("BF.ADD", "studentsID", strconv.Itoa(users[ind].Id)))
 		if err != nil {
