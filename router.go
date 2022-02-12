@@ -3,6 +3,7 @@ package main
 import (
 	"backend/function/auth"
 	"backend/function/member"
+	"backend/function/scheduleCourse"
 	"backend/function/selectCourse"
 
 	"github.com/gin-gonic/gin"
@@ -23,16 +24,14 @@ func RegisterRouter(r *gin.Engine) {
 	g.POST("/auth/logout", auth.AuthMiddleWare(), auth.Logout)
 	g.GET("/auth/whoami", auth.AuthMiddleWare(), auth.getInfo)
 
-	/*
-		// 排课
-		g.POST("/course/create")
-		g.GET("/course/get")
+	// 排课
+	g.POST("/course/create", scheduleCourse.Createcourse)
+	g.GET("/course/get", scheduleCourse.Getcourse)
+	//g.POST("/teacher/bind_course")
+	//g.POST("/teacher/unbind_course")
+	//g.GET("/teacher/get_course")
+	//g.POST("/course/schedule")
 
-		g.POST("/teacher/bind_course")
-		g.POST("/teacher/unbind_course")
-		g.GET("/teacher/get_course")
-		g.POST("/course/schedule")
-	*/
 	// 抢课
 	g.POST("/student/book_course", selectCourse.SelectCourse)
 	g.GET("/student/course", selectCourse.FindCourse)
