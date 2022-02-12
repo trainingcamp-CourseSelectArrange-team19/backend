@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/function/auth"
 	"backend/function/member"
 	"backend/function/selectCourse"
 
@@ -16,12 +17,13 @@ func RegisterRouter(r *gin.Engine) {
 	g.POST("/member/create", member.CreateMember)
 	g.POST("/member/update", member.UpdateName)
 	g.POST("/member/delete", member.DeleteMember)
-	/*
-		// 登录
-		g.POST("/auth/login")
-		g.POST("/auth/logout")
-		g.GET("/auth/whoami")
 
+	// 登录
+	g.POST("/auth/login", auth.Login)
+	g.POST("/auth/logout", auth.AuthMiddleWare(), auth.Logout)
+	g.GET("/auth/whoami", auth.AuthMiddleWare(), auth.getInfo)
+
+	/*
 		// 排课
 		g.POST("/course/create")
 		g.GET("/course/get")
