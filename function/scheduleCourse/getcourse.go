@@ -24,7 +24,7 @@ OK                 ErrNo = 0
 	ParamInvalid       ErrNo = 1  // 参数不合法
 */
 
-func getcourse(c *gin.Context)  {
+func Getcourse(c *gin.Context)  {
 	b := types.GetCourseResponse{Code: types.ParamInvalid}
 
 	var arg types.GetCourseRequest
