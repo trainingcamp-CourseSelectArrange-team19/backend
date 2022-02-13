@@ -3,6 +3,7 @@ package auth
 import (
 	"backend/database"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,12 +17,12 @@ type response struct {
 func GetInfo(c *gin.Context) {
 	userName, _ := c.Cookie("camp-session")
 
-	user := database.GetUserInfoByName(userName)
+	_,user:= database.GetUserInfoByName(userName)
 
 	json := response{
 		Id:       user.Id,
 		Nickname: user.Nickname,
-		Type:     user.Type,
+		Type: strconv.Itoa(user.Type),
 	}
 	c.JSON(http.StatusOK, json)
 }

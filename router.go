@@ -22,14 +22,14 @@ func RegisterRouter(r *gin.Engine) {
 	// 登录
 	g.POST("/auth/login", auth.Login)
 	g.POST("/auth/logout", auth.AuthMiddleWare(), auth.Logout)
-	g.GET("/auth/whoami", auth.AuthMiddleWare(), auth.getInfo)
+	g.GET("/auth/whoami", auth.AuthMiddleWare(), auth.GetInfo)
 
 	// 排课
 	g.POST("/course/create", scheduleCourse.Createcourse)
 	g.GET("/course/get", scheduleCourse.Getcourse)
 	//g.POST("/teacher/bind_course")
 	//g.POST("/teacher/unbind_course")
-	//g.GET("/teacher/get_course")
+	g.GET("/teacher/get_course",scheduleCourse.GetTeacherCourse)
 	//g.POST("/course/schedule")
 
 	// 抢课
