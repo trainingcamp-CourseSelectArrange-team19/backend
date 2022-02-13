@@ -14,7 +14,7 @@ func RegisterRouter(r *gin.Engine) {
 
 	// 成员管理
 	g.GET("/member", member.GetUser)
-	//g.GET("/member/list")
+	g.GET("/member/list", member.GetUsers)
 	g.POST("/member/create", member.CreateMember)
 	g.POST("/member/update", member.UpdateName)
 	g.POST("/member/delete", member.DeleteMember)
@@ -29,7 +29,7 @@ func RegisterRouter(r *gin.Engine) {
 	g.GET("/course/get", scheduleCourse.Getcourse)
 	//g.POST("/teacher/bind_course")
 	//g.POST("/teacher/unbind_course")
-	g.GET("/teacher/get_course",scheduleCourse.GetTeacherCourse)
+	g.GET("/teacher/get_course", scheduleCourse.GetTeacherCourse)
 	//g.POST("/course/schedule")
 
 	// 抢课

@@ -3,6 +3,7 @@ package member
 import (
 	"backend/database"
 	"backend/types"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -74,16 +75,38 @@ type GetMemberListResponse struct {
 }
 */
 
-/* func GetUsers(c *gin.Context) {
+func GetUsers(c *gin.Context) {
 	b := types.GetMemberListResponse{Code: types.ParamInvalid}
-
 	var arg types.GetMemberListRequest
 	if err := c.ShouldBind(&arg); err != nil {
 		c.JSON(200, b)
 		return
 	}
+	offset, limit := arg.Offset, arg.Limit
+	sz, _, users := database.GetAllValUserInfo()
+	if sz <= int64(offset) {
+		c.JSON(200, b)
+		return
+	}
+	b.Code = types.OK
+	var res []types.TMember
+	for i := int64(offset); i < Min(sz, int64(offset+limit)); i++ {
+		res = append(res, types.TMember{
+			UserID:   strconv.Itoa(users[i].Id),
+			Nickname: users[i].Nickname,
+			Username: users[i].Name,
+			UserType: users[i].Type,
+		})
+	}
 
+	b.Data = struct{ MemberList []types.TMember }{MemberList: res}
 	c.JSON(200, b)
 
 }
-*/
+
+func Min(x, y int64) int64 {
+	if x < y {
+		return x
+	}
+	return y
+}
