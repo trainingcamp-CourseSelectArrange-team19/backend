@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"net/http"
+	"backend/types"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,8 +12,7 @@ func AuthMiddleWare() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "err"})
+		c.JSON(types.LoginRequired, gin.H{"status": types.LoginRequired})
 		c.Abort()
-		return
 	}
 }

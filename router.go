@@ -22,7 +22,7 @@ func RegisterRouter(r *gin.Engine) {
 	// 登录
 	g.POST("/auth/login", auth.Login)
 	g.POST("/auth/logout", auth.AuthMiddleWare(), auth.Logout)
-	g.GET("/auth/whoami", auth.AuthMiddleWare(), auth.getInfo)
+	g.GET("/auth/whoami", auth.AuthMiddleWare(), auth.GetInfo)
 
 	// 排课
 	g.POST("/course/create", scheduleCourse.Createcourse)
