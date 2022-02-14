@@ -1,7 +1,6 @@
 package main
 
 import (
-	"backend/auth"
 	"backend/database"
 	"backend/function/selectCourse"
 	"reflect"
@@ -14,7 +13,6 @@ import (
 func main() {
 	database.Connect()
 	selectCourse.InitRedisConfig()
-	auth.InitRedisConfig()
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		for {
@@ -29,5 +27,5 @@ func main() {
 	r := gin.Default()
 	pprof.Register(r)
 	RegisterRouter(r)
-	r.Run(":8000")
+	r.Run(":80")
 }

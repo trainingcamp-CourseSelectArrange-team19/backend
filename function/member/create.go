@@ -1,9 +1,14 @@
 package member
 
 import (
-	"github.com/gin-gonic/gin"
-	"backend/types"
 	"backend/database"
+	"backend/function/selectCourse"
+	"backend/tools"
+	"backend/types"
+	"strconv"
+
+	"github.com/garyburd/redigo/redis"
+	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -19,14 +24,14 @@ type CreateMemberResponse struct {
 	Data struct {
 		UserID string // int64 范围
 	}
-} 
+}
 */
 
 func CreateMember(c *gin.Context) {
 	/* 参数不正确 提前设置返回值 */
 	/* 发送来的不符合要求 */
-	b := types.CreateMemberResponse{ 
-		Code: types.ParamInvalid,	
+	b := types.CreateMemberResponse{
+		Code: types.ParamInvalid,
 		Data: struct {
 			UserID string
 		}{
@@ -64,21 +69,33 @@ func CreateMember(c *gin.Context) {
 		return
 	}
 
-	if UserType != types.Admin {
+	//鉴权
+	cookie, _ := c.Cookie("camp-session")
+	_, organizer := database.GetUserInfoByName(cookie)
+	if organizer.Type != 1 {
 		b.Code = types.PermDenied
 		c.JSON(200, b)
 		return
 	}
 
 	_, u := database.GetUserInfoByName(Username)
-	if (u.Id != 0) {
+	if u.Id != 0 {
 		b.Code = types.UserHasExisted
 		c.JSON(200, b)
 		return
-	} 
+	}
 
 	database.CreateUser(Username, Nickname, Password, UserType)
+	redisConn := selectCourse.RedisPool.Get()
+	defer redisConn.Close()
+	_, tempUser := database.GetUserInfoByName(Username)
+	_, err := redis.Int64(redisConn.Do("BF.ADD", "studentsID", strconv.Itoa(tempUser.Id)))
+	if err != nil {
+		tools.LogMsg(err)
+		panic(err)
+	}
+
 	b.Code = types.OK
 	c.JSON(200, b)
-	
+
 }

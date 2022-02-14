@@ -47,7 +47,7 @@ func FindCourse(c *gin.Context) {
 }
 
 func InsertSchedule(StudentID string){
-	redisConn := redisPool.Get()
+	redisConn := RedisPool.Get()
 	defer redisConn.Close()
 	val, err := redis.Ints(redisConn.Do("SMEMBERS", "courses:" + StudentID + ":uids"))
 	if err != nil {
