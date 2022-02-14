@@ -6,16 +6,17 @@ import (
 	"backend/tools"
 	"backend/types"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 )
 
 // 请求信息
-type requestJson struct {
-	Username string `form:"userName" json:"userName" binding:"required"` // 用户名
-	Pssword  string `form:"password" json:"password" binding:"required"` // 密码
-}
+// type requestJson struct {
+// 	Username string `form:"userName" loginRequest:"userName" binding:"required"` // 用户名
+// 	Pssword  string `form:"password" loginRequest:"password" binding:"required"` // 密码
+// }
 
 // @title             Login
 // @description       登录
@@ -23,49 +24,94 @@ type requestJson struct {
 // @param             c             请求句柄
 func Login(c *gin.Context) {
 	// 已经登录无需再次身份验证
-	if _, err := c.Cookie("camp-session"); err == nil {
-		c.JSON(http.StatusOK, gin.H{"status": "200"})
+	if userID, err := c.Cookie("camp-session"); err == nil {
+		loginResponse := types.LoginResponse{
+			Code: http.StatusOK,
+			Data: struct{ UserID string }{
+				UserID: userID,
+			},
+		}
+		c.JSON(http.StatusOK, loginResponse)
 		return
 	}
 
-	var json requestJson
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var loginRequest types.LoginRequest
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		loginResponse := types.LoginResponse{
+			Code: http.StatusBadRequest,
+			Data: struct{ UserID string }{
+				UserID: "",
+			},
+		}
+		c.JSON(http.StatusBadRequest, loginResponse)
 		return
 	}
 
 	redisConn := selectCourse.RedisPool.Get()
 	defer redisConn.Close()
-	var dbsearchResult string
 	var user *database.User
-
 	// 读取redis或database获取user
-	val, err := redisConn.Do("HMGET", hash, json.Username)
-	if err == redis.Nil { // redis查询结果为空
-		dbsearchResult, user = database.GetUserInfoByName(json.Username)
-		if dbsearchResult == "Success" {
-			redisConn.Do("HSET", hash, json.Username, user)
-		} else {
-			c.JSON(types.UserNotExisted, gin.H{"status": types.UserNotExisted})
+	val, err := redisConn.Do("HMGET", hash, loginRequest.Username)
+	user = val.(*database.User)
+	// redis查询出现错误
+	if err != nil {
+		tools.LogMsg(err)
+		loginResponse := types.LoginResponse{
+			Code: types.UnknownError,
+			Data: struct{ UserID string }{
+				UserID: "",
+			},
+		}
+		c.JSON(types.UnknownError, loginResponse)
+		return
+	}
+	// redis查询结果为空
+	if err == redis.Nil {
+		dbsearchResult, tmpUser := database.GetUserInfoByName(loginRequest.Username)
+		if dbsearchResult != "Success" {
+			loginResponse := types.LoginResponse{
+				Code: types.UserNotExisted,
+				Data: struct{ UserID string }{
+					UserID: "",
+				},
+			}
+			c.JSON(types.UserNotExisted, loginResponse)
 			return
 		}
-	} else if err != nil { // redis查询出现错误
-		tools.LogMsg(err)
-		c.JSON(types.UnknownError, gin.H{"status": types.UnknownError})
-		return
-	} else { // redis查询到结果
-		user = val.(*database.User)
+		user = tmpUser
+		redisConn.Do("HSET", hash, user.Id, user)
+		redisConn.Do("HSET", hash, user.Name, user)
 	}
 
-	status := http.StatusOK
+	// 用户已删除
 	if user.IsValid == 0 {
-		status = types.UserHasDeleted
-	} else if json.Pssword != user.Password {
-		status = types.WrongPassword
+		loginResponse := types.LoginResponse{
+			Code: types.UserHasDeleted,
+			Data: struct{ UserID string }{
+				UserID: "",
+			},
+		}
+		c.JSON(types.UserHasDeleted, loginResponse)
+		return
 	}
-	c.JSON(status, gin.H{"status": status})
-
-	if status == http.StatusOK {
-		c.SetCookie("camp-session", json.Username, 3600, "/", "localhost", false, true)
+	// 密码错误
+	if loginRequest.Password != user.Password {
+		loginResponse := types.LoginResponse{
+			Code: types.WrongPassword,
+			Data: struct{ UserID string }{
+				UserID: "",
+			},
+		}
+		c.JSON(types.WrongPassword, loginResponse)
+		return
 	}
+	// 密码正确
+	loginResponse := types.LoginResponse{
+		Code: http.StatusOK,
+		Data: struct{ UserID string }{
+			UserID: strconv.Itoa(user.Id),
+		},
+	}
+	c.JSON(http.StatusOK, loginResponse)
+	c.SetCookie("camp-session", strconv.Itoa(user.Id), 3600, "/", "localhost", false, true)
 }

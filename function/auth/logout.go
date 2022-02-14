@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"backend/types"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,14 +12,28 @@ import (
 // @auth              高宏宇         2022/2/12
 // @param             c             请求句柄
 func Logout(c *gin.Context) {
-	var json requestJson
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if _, err := c.Cookie("camp-session"); err != nil {
+		logoutResponse := types.LogoutResponse{
+			Code: types.LoginRequired,
+		}
+		c.JSON(types.LoginRequired, logoutResponse)
+		return
+	}
+
+	var logoutRequest types.LogoutRequest
+	if err := c.ShouldBindJSON(&logoutRequest); err != nil {
+		logoutResponse := types.LogoutResponse{
+			Code: http.StatusBadRequest,
+		}
+		c.JSON(http.StatusBadRequest, logoutResponse)
 		return
 	}
 
 	// 清除cookie
-	c.SetCookie("camp-session", json.Username, -1, "/", "localhost", false, true)
+	c.SetCookie("camp-session", "", -1, "/", "localhost", false, true)
 
-	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
+	logoutResponse := types.LogoutResponse{
+		Code: http.StatusOK,
+	}
+	c.JSON(http.StatusOK, logoutResponse)
 }

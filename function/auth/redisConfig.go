@@ -2,8 +2,9 @@ package auth
 
 var (
 	//redisPool *redis.Pool
-	hash      string = "users"
+	hash string = "users"
 )
+
 /*
 // @title             NewPool
 // @description       初始化redis连接池

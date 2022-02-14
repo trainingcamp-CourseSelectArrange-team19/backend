@@ -236,13 +236,14 @@ func GetStudentCourseAbsent(studentID int, courseID int) (int64, error, []Studen
 }
 
 //通过courseID获取TeacherID
-func GetTeacherFromCourse(CourseID int)(string,*TeacherSchedule)  {
+func GetTeacherFromCourse(CourseID int) (string, *TeacherSchedule) {
 	TempTeacherSchedule := new(TeacherSchedule)
-	if err := db.First(TempTeacherSchedule,"course_id = ?",CourseID).Error;err != nil{
+	if err := db.First(TempTeacherSchedule, "course_id = ?", CourseID).Error; err != nil {
 		return fmt.Sprintf("query failed ,err is %s", err), TempTeacherSchedule
 	}
-	return "",TempTeacherSchedule
+	return "", TempTeacherSchedule
 }
+
 //func main() {
 //	connect()
 //	res := CreateUser("aaa", "张三", "asdfasdf", 2)
