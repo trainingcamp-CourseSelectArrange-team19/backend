@@ -1,14 +1,10 @@
 package auth
 
-import (
-	"github.com/garyburd/redigo/redis"
-)
-
 var (
-	redisPool *redis.Pool
+	//redisPool *redis.Pool
 	hash      string = "users"
 )
-
+/*
 // @title             NewPool
 // @description       初始化redis连接池
 // @auth              高宏宇         2022/2/13
@@ -33,3 +29,4 @@ func NewPool() *redis.Pool {
 func InitRedisConfig() {
 	redisPool = NewPool()
 }
+*/

@@ -1,10 +1,14 @@
 package member
 
 import (
+	"backend/function/selectCourse"
+	"backend/tools"
 	"github.com/gin-gonic/gin"
 	"backend/types"
 	"backend/database"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/garyburd/redigo/redis"
+	"strconv"
 )
 
 /*
@@ -35,6 +39,7 @@ func CreateMember(c *gin.Context) {
 	}
 	var arg types.CreateMemberRequest
 	if err := c.ShouldBind(&arg); err != nil {
+		panic(err.Error())
 		c.JSON(200, b)
 		return
 	}
@@ -71,13 +76,23 @@ func CreateMember(c *gin.Context) {
 	}
 
 	_, u := database.GetUserInfoByName(Username)
-	if (u.Id != 0) {
+	if u.Id != 0 {
 		b.Code = types.UserHasExisted
 		c.JSON(200, b)
 		return
 	} 
 
 	database.CreateUser(Username, Nickname, Password, UserType)
+	if UserType == 2{
+		redisConn := selectCourse.RedisPool.Get()
+		defer redisConn.Close()
+		_, tempUser := database.GetUserInfoByName(Username)
+		_, err := redis.Int64(redisConn.Do("BF.ADD", "studentsID", strconv.Itoa(tempUser.Id)))
+		if err != nil {
+			tools.LogMsg(err)
+			panic(err)
+		}
+	}
 	b.Code = types.OK
 	c.JSON(200, b)
 	

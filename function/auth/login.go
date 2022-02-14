@@ -2,6 +2,7 @@ package auth
 
 import (
 	"backend/database"
+	"backend/function/selectCourse"
 	"backend/tools"
 	"backend/types"
 	"net/http"
@@ -33,7 +34,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	redisConn := redisPool.Get()
+	redisConn := selectCourse.RedisPool.Get()
 	defer redisConn.Close()
 	var dbsearchResult string
 	var user *database.User

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"backend/database"
+	"backend/function/selectCourse"
 	"backend/tools"
 	"backend/types"
 	"net/http"
@@ -24,7 +25,7 @@ type responseJson struct {
 func GetInfo(c *gin.Context) {
 	userName, _ := c.Cookie("camp-session")
 
-	redisConn := redisPool.Get()
+	redisConn := selectCourse.RedisPool.Get()
 	defer redisConn.Close()
 	var dbsearchResult string
 	var user *database.User

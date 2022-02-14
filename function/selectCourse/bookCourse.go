@@ -10,11 +10,11 @@ import (
 	"strconv"
 )
 var (
-	redisPool  *redis.Pool
+	RedisPool  *redis.Pool
 	SuccessSet mapset.Set
 )
 func InitRedisConfig() {
-	redisPool = NewPool()
+	RedisPool = NewPool()
 	SuccessSet = mapset.NewSet()
 	_, err, users := database.GetAllValStudentInfo()
 	if err != nil{
@@ -26,7 +26,7 @@ func InitRedisConfig() {
 		tools.LogMsg(err)
 		panic(err)
 	}
-	redisConn := redisPool.Get()
+	redisConn := RedisPool.Get()
 	defer redisConn.Close()
 	val, err1 := redis.Strings(redisConn.Do("KEYS", "*"))
 	if err1 != nil {
@@ -71,7 +71,7 @@ func SelectCourse(c *gin.Context) {
 		return
 	}
 	StudentID, CourseID := arg.StudentID, arg.CourseID
-	redisConn := redisPool.Get()
+	redisConn := RedisPool.Get()
 	defer redisConn.Close()
 	success := RemoteDeductionStock(redisConn, CourseID, StudentID)
 	if success == 1 {
