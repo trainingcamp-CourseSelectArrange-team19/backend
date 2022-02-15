@@ -2,14 +2,12 @@ package auth
 
 import (
 	"backend/database"
-	"backend/function/selectCourse"
-	"backend/tools"
 	"backend/types"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
 )
 
 // 请求信息
@@ -46,27 +44,9 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, loginResponse)
 		return
 	}
-
-	redisConn := selectCourse.RedisPool.Get()
-	defer redisConn.Close()
 	var user *database.User
 	// 读取redis或database获取user
-	val, err := redisConn.Do("HMGET", hash, loginRequest.Username)
-	user = val.(*database.User)
-	// redis查询出现错误
-	if err != nil {
-		tools.LogMsg(err)
-		loginResponse := types.LoginResponse{
-			Code: types.UnknownError,
-			Data: struct{ UserID string }{
-				UserID: "",
-			},
-		}
-		c.JSON(types.UnknownError, loginResponse)
-		return
-	}
-	// redis查询结果为空
-	if err == redis.Nil {
+
 		dbsearchResult, tmpUser := database.GetUserInfoByName(loginRequest.Username)
 		if dbsearchResult != "Success" {
 			loginResponse := types.LoginResponse{
@@ -79,9 +59,6 @@ func Login(c *gin.Context) {
 			return
 		}
 		user = tmpUser
-		redisConn.Do("HSET", hash, user.Id, user)
-		redisConn.Do("HSET", hash, user.Name, user)
-	}
 
 	// 用户已删除
 	if user.IsValid == 0 {
@@ -113,5 +90,10 @@ func Login(c *gin.Context) {
 		},
 	}
 	c.JSON(http.StatusOK, loginResponse)
-	c.SetCookie("camp-session", strconv.Itoa(user.Id), 3600, "/", "localhost", false, true)
+	c.SetCookie("camp-session", user.Name, 3600, "/", "localhost", false, false)
+	cookie, err1 := c.Cookie("camp-session")
+	if err1 != nil {
+		panic(err1)
+	}
+	fmt.Println(cookie)
 }

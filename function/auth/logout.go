@@ -30,7 +30,7 @@ func Logout(c *gin.Context) {
 	}
 
 	// 清除cookie
-	c.SetCookie("camp-session", "", -1, "/", "localhost", false, true)
+	c.SetCookie("camp-session", "", -1, "/", "localhost", false, false)
 
 	logoutResponse := types.LogoutResponse{
 		Code: http.StatusOK,

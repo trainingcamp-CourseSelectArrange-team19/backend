@@ -70,7 +70,11 @@ func CreateMember(c *gin.Context) {
 	}
 
 	//鉴权
-	cookie, _ := c.Cookie("camp-session")
+	cookie, err1 := c.Cookie("camp-session")
+	if err1 != nil {
+		panic(err1)
+	}
+	//fmt.Println(cookie)
 	_, organizer := database.GetUserInfoByName(cookie)
 	if organizer.Type != 1 {
 		b.Code = types.PermDenied
