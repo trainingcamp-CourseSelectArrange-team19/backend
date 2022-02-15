@@ -100,6 +100,7 @@ func CreateMember(c *gin.Context) {
 	}
 
 	b.Code = types.OK
+	b.Data = struct{ UserID string }{UserID: strconv.Itoa(tempUser.Id)}
 	c.JSON(200, b)
 
 }
