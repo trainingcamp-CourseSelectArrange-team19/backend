@@ -92,3 +92,18 @@ func SelectCourse(c *gin.Context) {
 func Pong(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "pong"})
 }
+func ChangeCap(){
+	n, courses := database.GetAllCourse()
+	if n > 0 {
+		redisConn := RedisPool.Get()
+		defer redisConn.Close()
+		for ind := 0 ; ind < len(courses) ; ind++{
+			cap, err := redis.Int(redisConn.Do("GET", "seckill:" + strconv.Itoa(courses[ind].Id) + ":stock"))
+			if err != nil {
+				tools.LogMsg(err)
+				panic(err)
+			}
+			database.UpdateCourseCap(courses[ind], cap)
+		}
+	}
+}

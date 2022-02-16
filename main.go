@@ -21,6 +21,7 @@ func main() {
 				selectCourse.InsertSchedule(reflect.ValueOf(val).String())
 			}
 			selectCourse.SuccessSet.Clear()
+			selectCourse.ChangeCap()
 		}
 	}()
 	defer ticker.Stop()
