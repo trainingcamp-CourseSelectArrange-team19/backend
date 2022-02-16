@@ -21,7 +21,7 @@ import (
 // @auth              高宏宇         2022/2/12
 // @param             c             请求句柄
 func GetInfo(c *gin.Context) {
-	userId, err := c.Cookie("camp-session")
+	cookie, err := c.Cookie("camp-session")
 	if err != nil {
 		whoAmIResponse := types.WhoAmIResponse{
 			Code: types.LoginRequired,
@@ -30,17 +30,16 @@ func GetInfo(c *gin.Context) {
 		c.JSON(types.LoginRequired, whoAmIResponse)
 		return
 	}
-	var user *database.User
 
-		user = database.GetUserInfoById(userId)
-		if user == nil {
-			whoAmIResponse := types.WhoAmIResponse{
-				Code: types.UserNotExisted,
-				Data: types.TMember{},
-			}
-			c.JSON(types.UserNotExisted, whoAmIResponse)
-			return
+	dbsearchResult, user := database.GetUserInfoByName(cookie)
+	if dbsearchResult != "Success" {
+		whoAmIResponse := types.WhoAmIResponse{
+			Code: types.UserNotExisted,
+			Data: types.TMember{},
 		}
+		c.JSON(types.UserNotExisted, whoAmIResponse)
+		return
+	}
 
 	whoAmIResponse := types.WhoAmIResponse{
 		Code: http.StatusOK,

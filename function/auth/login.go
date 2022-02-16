@@ -5,7 +5,6 @@ import (
 	"backend/types"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,17 +21,18 @@ import (
 // @param             c             请求句柄
 func Login(c *gin.Context) {
 	// 已经登录无需再次身份验证
-	if userID, err := c.Cookie("camp-session"); err == nil {
+	if cookie, err := c.Cookie("camp-session"); err == nil {
 		loginResponse := types.LoginResponse{
 			Code: http.StatusOK,
 			Data: struct{ UserID string }{
-				UserID: userID,
+				UserID: cookie,
 			},
 		}
 		c.JSON(http.StatusOK, loginResponse)
 		return
 	}
 
+	// 解析JSON
 	var loginRequest types.LoginRequest
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
 		loginResponse := types.LoginResponse{
@@ -44,21 +44,19 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, loginResponse)
 		return
 	}
-	var user *database.User
-	// 读取redis或database获取user
 
-		dbsearchResult, tmpUser := database.GetUserInfoByName(loginRequest.Username)
-		if dbsearchResult != "Success" {
-			loginResponse := types.LoginResponse{
-				Code: types.UserNotExisted,
-				Data: struct{ UserID string }{
-					UserID: "",
-				},
-			}
-			c.JSON(types.UserNotExisted, loginResponse)
-			return
+	// 读取database获取user
+	dbsearchResult, user := database.GetUserInfoByName(loginRequest.Username)
+	if dbsearchResult != "Success" {
+		loginResponse := types.LoginResponse{
+			Code: types.UserNotExisted,
+			Data: struct{ UserID string }{
+				UserID: "",
+			},
 		}
-		user = tmpUser
+		c.JSON(types.UserNotExisted, loginResponse)
+		return
+	}
 
 	// 用户已删除
 	if user.IsValid == 0 {
@@ -86,7 +84,7 @@ func Login(c *gin.Context) {
 	loginResponse := types.LoginResponse{
 		Code: http.StatusOK,
 		Data: struct{ UserID string }{
-			UserID: strconv.Itoa(user.Id),
+			UserID: user.Name,
 		},
 	}
 	c.JSON(http.StatusOK, loginResponse)
