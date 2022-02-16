@@ -100,13 +100,12 @@ func ChangeCap() {
 	if n > 0 {
 		redisConn := RedisPool.Get()
 		defer redisConn.Close()
-		for ind := 0; ind < len(courses); ind++ {
-			cap, err := redis.Int(redisConn.Do("GET", "seckill:"+strconv.Itoa(courses[ind].Id)+":stock"))
-			if err != nil {
-				//tools.LogMsg(err)
-				panic(err)
+		for ind := 0 ; ind < len(courses) ; ind++{
+			cap,_ := redis.String(redisConn.Do("GET", "seckill:" + strconv.Itoa(courses[ind].Id) + ":stock"))
+			if cap != ""{
+				//fmt.Println(cap)
+				database.UpdateCourseCap(courses[ind], cap)
 			}
-			database.UpdateCourseCap(courses[ind], cap)
 		}
 	}
 }

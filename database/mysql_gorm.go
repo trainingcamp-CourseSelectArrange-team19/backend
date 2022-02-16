@@ -144,7 +144,7 @@ func CreateCourse(name string, capacity int) string {
 }
 
 //更新课程余量
-func UpdateCourseCap(course Course, cap int) error {
+func UpdateCourseCap(course Course, cap string) error {
 	result := db.Model(&course).Where("id = ?", course.Id).Update("capacity", cap)
 	return result.Error
 }

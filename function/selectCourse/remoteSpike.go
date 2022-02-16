@@ -66,6 +66,11 @@ func NewPool() *redis.Pool {
 			if err != nil {
 				panic(err.Error())
 			}
+			//_, err = c.Do("AUTH", "root")
+			_, err = c.Do("AUTH", "bytedancecamp")
+			if err != nil {
+				panic(err.Error())
+			}
 			return c, err
 		},
 	}
