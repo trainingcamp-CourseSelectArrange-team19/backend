@@ -3,8 +3,8 @@ package auth
 import (
 	"backend/database"
 	"backend/types"
-	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,7 +23,7 @@ func Login(c *gin.Context) {
 	// 已经登录无需再次身份验证
 	if cookie, err := c.Cookie("camp-session"); err == nil {
 		loginResponse := types.LoginResponse{
-			Code: http.StatusOK,
+			Code: types.OK,
 			Data: struct{ UserID string }{
 				UserID: cookie,
 			},
@@ -36,7 +36,7 @@ func Login(c *gin.Context) {
 	var loginRequest types.LoginRequest
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
 		loginResponse := types.LoginResponse{
-			Code: http.StatusBadRequest,
+			Code: types.WrongPassword,
 			Data: struct{ UserID string }{
 				UserID: "",
 			},
@@ -54,7 +54,7 @@ func Login(c *gin.Context) {
 				UserID: "",
 			},
 		}
-		c.JSON(types.UserNotExisted, loginResponse)
+		c.JSON(http.StatusOK, loginResponse)
 		return
 	}
 
@@ -66,7 +66,7 @@ func Login(c *gin.Context) {
 				UserID: "",
 			},
 		}
-		c.JSON(types.UserHasDeleted, loginResponse)
+		c.JSON(http.StatusOK, loginResponse)
 		return
 	}
 	// 密码错误
@@ -77,21 +77,16 @@ func Login(c *gin.Context) {
 				UserID: "",
 			},
 		}
-		c.JSON(types.WrongPassword, loginResponse)
+		c.JSON(http.StatusOK, loginResponse)
 		return
 	}
 	// 密码正确
 	loginResponse := types.LoginResponse{
 		Code: http.StatusOK,
 		Data: struct{ UserID string }{
-			UserID: user.Name,
+			UserID: strconv.Itoa(user.Id),
 		},
 	}
+	c.SetCookie("camp-session", strconv.Itoa(user.Id), 3600, "/", "180.184.65.192", false, false)
 	c.JSON(http.StatusOK, loginResponse)
-	c.SetCookie("camp-session", user.Name, 3600, "/", "localhost", false, false)
-	cookie, err1 := c.Cookie("camp-session")
-	if err1 != nil {
-		panic(err1)
-	}
-	fmt.Println(cookie)
 }

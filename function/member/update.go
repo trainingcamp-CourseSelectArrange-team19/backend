@@ -28,7 +28,7 @@ func UpdateName(c *gin.Context) {
 		return
 	}
 	Nickname, ID := arg.Nickname, arg.UserID
-	u := database.GetUserInfoById(ID)
+	_, u := database.GetUserInfoById(ID)
 	if u.Id == 0 {
 		b.Code = types.UserNotExisted
 		c.JSON(200, b)

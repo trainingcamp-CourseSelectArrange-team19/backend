@@ -35,7 +35,7 @@ func GetUser(c *gin.Context) {
 		return
 	}
 	ID := arg.UserID
-	u := database.GetUserInfoById(ID)
+	_, u := database.GetUserInfoById(ID)
 	//不存在
 	if u.Id == 0 {
 		b.Code = types.UserNotExisted

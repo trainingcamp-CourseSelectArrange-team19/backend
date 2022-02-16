@@ -16,9 +16,11 @@ func Logout(c *gin.Context) {
 		logoutResponse := types.LogoutResponse{
 			Code: types.LoginRequired,
 		}
-		c.JSON(types.LoginRequired, logoutResponse)
+		c.JSON(http.StatusOK, logoutResponse)
 		return
 	}
+
+	cookie, _ := c.Cookie("camp-session")
 
 	var logoutRequest types.LogoutRequest
 	if err := c.ShouldBindJSON(&logoutRequest); err != nil {
@@ -30,10 +32,10 @@ func Logout(c *gin.Context) {
 	}
 
 	// 清除cookie
-	c.SetCookie("camp-session", "", -1, "/", "localhost", false, false)
+	c.SetCookie("camp-session", cookie, -1, "/", "180.184.65.192", false, false)
 
 	logoutResponse := types.LogoutResponse{
-		Code: http.StatusOK,
+		Code: types.OK,
 	}
 	c.JSON(http.StatusOK, logoutResponse)
 }

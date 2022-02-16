@@ -5,6 +5,7 @@ import (
 	"backend/function/selectCourse"
 	"backend/tools"
 	"backend/types"
+	"net/http"
 	"strconv"
 
 	"github.com/garyburd/redigo/redis"
@@ -70,12 +71,17 @@ func CreateMember(c *gin.Context) {
 	}
 
 	//鉴权
-	cookie, err1 := c.Cookie("camp-session")
-	if err1 != nil {
-		panic(err1)
+	//cookie, err1 := c.Cookie("camp-session")
+	if _, err1 := c.Cookie("camp-session"); err1 != nil {
+		b.Code = types.LoginRequired
+		c.JSON(http.StatusOK, b)
+		return
 	}
+
+	cookie, _ := c.Cookie("camp-session")
+
 	//fmt.Println(cookie)
-	_, organizer := database.GetUserInfoByName(cookie)
+	_, organizer := database.GetUserInfoById(cookie)
 	if organizer.Type != 1 {
 		b.Code = types.PermDenied
 		c.JSON(200, b)
@@ -92,11 +98,14 @@ func CreateMember(c *gin.Context) {
 	database.CreateUser(Username, Nickname, Password, UserType)
 	redisConn := selectCourse.RedisPool.Get()
 	defer redisConn.Close()
+
 	_, tempUser := database.GetUserInfoByName(Username)
-	_, err := redis.Int64(redisConn.Do("BF.ADD", "studentsID", strconv.Itoa(tempUser.Id)))
-	if err != nil {
-		tools.LogMsg(err)
-		panic(err)
+	if tempUser.Type == 2 {
+		_, err := redis.Int64(redisConn.Do("BF.ADD", "studentsID", strconv.Itoa(tempUser.Id)))
+		if err != nil {
+			tools.LogMsg(err)
+			panic(err)
+		}
 	}
 
 	b.Code = types.OK

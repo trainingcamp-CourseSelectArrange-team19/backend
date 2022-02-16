@@ -57,8 +57,8 @@ var db *gorm.DB
 //连接数据库
 func Connect() {
 	var err error
-	//dsn := "root:bytedancecamp@tcp(180.184.65.192:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
-	dsn := "root:ru19870528@tcp(127.0.0.1:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:bytedancecamp@tcp(localhost:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
+	//dsn := "root:ru19870528@tcp(127.0.0.1:3306)/test1?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = gorm.Open(mysql.Open(dsn))
 	if err != nil {
 		panic(fmt.Sprintf("open mysql failed, err is %s", err))
@@ -72,6 +72,7 @@ func CreateUser(Username string, Nickname string, Password string, Usertype int)
 		Nickname: Nickname,
 		Password: Password,
 		Type:     Usertype,
+		IsValid:  1,
 	}
 	if err := db.Create(newUser).Error; err != nil {
 		return fmt.Sprintf("create failed, err is %s", err)
@@ -88,12 +89,12 @@ func GetUserInfoByName(Username string) (string, *User) {
 	}
 	return "Success", TempUser
 }
-func GetUserInfoById(ID string) *User {
+func GetUserInfoById(ID string) (string, *User) {
 	TempUser := new(User)
 	if err := db.First(TempUser, "id = ?", ID).Error; err != nil {
-		return TempUser
+		return fmt.Sprintf("query failed ,err is %s", err), TempUser
 	}
-	return TempUser
+	return "Success", TempUser
 }
 
 //获取所有用户信息，包括已删除的用户，

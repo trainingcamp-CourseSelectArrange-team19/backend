@@ -21,28 +21,30 @@ import (
 // @auth              高宏宇         2022/2/12
 // @param             c             请求句柄
 func GetInfo(c *gin.Context) {
-	cookie, err := c.Cookie("camp-session")
-	if err != nil {
+	//cookie, err := c.Cookie("camp-session")
+	if _, err := c.Cookie("camp-session"); err != nil {
 		whoAmIResponse := types.WhoAmIResponse{
 			Code: types.LoginRequired,
 			Data: types.TMember{},
 		}
-		c.JSON(types.LoginRequired, whoAmIResponse)
+		c.JSON(http.StatusOK, whoAmIResponse)
 		return
 	}
 
-	dbsearchResult, user := database.GetUserInfoByName(cookie)
+	cookie, _ := c.Cookie("camp-session")
+
+	dbsearchResult, user := database.GetUserInfoById(cookie)
 	if dbsearchResult != "Success" {
 		whoAmIResponse := types.WhoAmIResponse{
 			Code: types.UserNotExisted,
 			Data: types.TMember{},
 		}
-		c.JSON(types.UserNotExisted, whoAmIResponse)
+		c.JSON(http.StatusOK, whoAmIResponse)
 		return
 	}
 
 	whoAmIResponse := types.WhoAmIResponse{
-		Code: http.StatusOK,
+		Code: types.OK,
 		Data: types.TMember{
 			UserID:   strconv.Itoa(user.Id),
 			Nickname: user.Nickname,

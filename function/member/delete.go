@@ -29,7 +29,7 @@ func DeleteMember(c *gin.Context) {
 
 	//获取用户
 	ID := arg.UserID
-	u := database.GetUserInfoById(ID)
+	_, u := database.GetUserInfoById(ID)
 
 	//ID为0 用户不存在
 	if u.Id == 0 {
