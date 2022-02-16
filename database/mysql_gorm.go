@@ -143,6 +143,12 @@ func CreateCourse(name string, capacity int) string {
 	return "create successes!"
 }
 
+//更新课程余量
+func UpdateCourseCap(course Course, cap int) error {
+	result := db.Model(&course).Where("id = ?", course.Id).Update("capacity", cap)
+	return result.Error
+}
+
 //获取单个课程
 func GetOneCourse(name string) (string, *Course) {
 	TempCourse := new(Course)

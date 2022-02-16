@@ -9,20 +9,22 @@ import (
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
+
 var (
 	RedisPool  *redis.Pool
 	SuccessSet mapset.Set
 )
+
 func InitRedisConfig() {
 	RedisPool = NewPool()
 	SuccessSet = mapset.NewSet()
 	_, err, users := database.GetAllValStudentInfo()
-	if err != nil{
+	if err != nil {
 		tools.LogMsg(err)
 		panic(err)
 	}
 	_, courses := database.GetAllCourse()
-	if err != nil{
+	if err != nil {
 		tools.LogMsg(err)
 		panic(err)
 	}
@@ -34,38 +36,39 @@ func InitRedisConfig() {
 		panic(err1)
 	}
 	redisConn.Send("MULTI")
-	for i, _ := range val{
+	for i, _ := range val {
 		redisConn.Send("DEL", val[i])
 	}
 	redisConn.Do("EXEC")
 	redisConn.Do("BF.reserve", "studentsID", "0.01", "500000")
-	for ind := 0 ; ind < len(users) ; ind++{
+	for ind := 0; ind < len(users); ind++ {
 		_, err := redis.Int64(redisConn.Do("BF.ADD", "studentsID", strconv.Itoa(users[ind].Id)))
 		if err != nil {
 			tools.LogMsg(err)
 			panic(err)
 		}
 	}
-	for ind := 0 ; ind < len(courses) ; ind++{
-		_, err := redisConn.Do("SET", "seckill:" + strconv.Itoa(courses[ind].Id) + ":stock", courses[ind].Capacity)
+	for ind := 0; ind < len(courses); ind++ {
+		_, err := redisConn.Do("SET", "seckill:"+strconv.Itoa(courses[ind].Id)+":stock", courses[ind].Capacity)
 		if err != nil {
 			tools.LogMsg(err)
 			panic(err)
 		}
-		_, err = redisConn.Do("SET", "seckill:" + strconv.Itoa(courses[ind].Id) + ":end", 0)
+		_, err = redisConn.Do("SET", "seckill:"+strconv.Itoa(courses[ind].Id)+":end", 0)
 		if err != nil {
 			tools.LogMsg(err)
 			panic(err)
 		}
 	}
 }
+
 //处理请求函数,根据请求将响应结果信息写入日志
 func SelectCourse(c *gin.Context) {
 	b := types.BookCourseResponse{
 		Code: types.ParamInvalid,
 	}
 	var arg types.BookCourseRequest
-	if err := c.ShouldBind(&arg); err != nil {
+	if err := c.ShouldBindJSON(&arg); err != nil {
 		c.JSON(500, b)
 		panic(err.Error())
 		return
@@ -81,7 +84,7 @@ func SelectCourse(c *gin.Context) {
 	} else if success == -1 {
 		b.Code = types.CourseNotExisted
 		c.JSON(200, b)
-	} else  if success == -3{
+	} else if success == -3 {
 		b.Code = types.StudentNotExisted
 		c.JSON(200, b)
 	} else {
@@ -91,4 +94,19 @@ func SelectCourse(c *gin.Context) {
 }
 func Pong(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "pong"})
+}
+func ChangeCap() {
+	n, courses := database.GetAllCourse()
+	if n > 0 {
+		redisConn := RedisPool.Get()
+		defer redisConn.Close()
+		for ind := 0; ind < len(courses); ind++ {
+			cap, err := redis.Int(redisConn.Do("GET", "seckill:"+strconv.Itoa(courses[ind].Id)+":stock"))
+			if err != nil {
+				//tools.LogMsg(err)
+				panic(err)
+			}
+			database.UpdateCourseCap(courses[ind], cap)
+		}
+	}
 }

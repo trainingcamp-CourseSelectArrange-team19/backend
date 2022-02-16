@@ -7,7 +7,6 @@ import (
 	"strconv"
 )
 
-
 /*
 type GetTeacherCourseRequest struct {
 	TeacherID string
@@ -24,32 +23,37 @@ type TCourse struct {
 	Name     string
 	TeacherID string
 }
- */
-func GetTeacherCourse(c *gin.Context){
+*/
+func GetTeacherCourse(c *gin.Context) {
 	b := types.GetTeacherCourseResponse{Code: types.ParamInvalid}
 	var arg types.GetTeacherCourseRequest
 	if err := c.ShouldBind(&arg); err != nil {
-		c.JSON(200,b)
+		c.JSON(200, b)
 		return
 	}
-	TeacherID,_ := strconv.Atoi(arg.TeacherID)
+	TeacherID, _ := strconv.Atoi(arg.TeacherID)
 
-	n,err,arr := database.GetTeacherCourse(TeacherID)
+	n, err, arr := database.GetTeacherCourse(TeacherID)
 	if err != nil {
 		b.Code = types.UnknownError
-		c.JSON(200,b)
+		c.JSON(200, b)
 		return
 	}
-	tcourse := make([]*types.TCourse,n)
+
+	tcourse := make([]*types.TCourse, n)
 	for i := 0; i < int(n); i++ {
-		tcourse[i].TeacherID = strconv.Itoa(TeacherID)
-		tcourse[i].CourseID = strconv.Itoa(arr[i].CourseID)
-		_,tempCourse := database.GetOneCourseName(arr[i].CourseID)
-		tcourse[i].Name = tempCourse.Name
+		_, tempCourse := database.GetOneCourseName(arr[i].CourseID)
+		tCourse := types.TCourse{
+			TeacherID: arg.TeacherID,
+			CourseID:  strconv.Itoa(arr[i].CourseID),
+			Name:      tempCourse.Name,
+		}
+		tcourse[i] = &tCourse
 	}
 
+	b.Code = types.OK
 	b.Data = struct{ CourseList []*types.TCourse }{CourseList: tcourse}
 
-	c.JSON(200,b)
+	c.JSON(200, b)
 
 }

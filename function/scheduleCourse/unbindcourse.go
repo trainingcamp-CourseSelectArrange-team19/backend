@@ -14,27 +14,38 @@ type UnbindCourseRequest struct {
 	CourseID  string
 	TeacherID string
 }
-
 type UnbindCourseResponse struct {
 	Code ErrNo
 }
- */
+*/
 func UnBindCourse(c *gin.Context) {
 	b := types.UnbindCourseResponse{Code: types.ParamInvalid}
 	var arg types.UnbindCourseRequest
 	if err := c.ShouldBindJSON(&arg); err != nil {
-		c.JSON(200,b)
+		c.JSON(200, b)
 		return
 	}
-	courseid,teacherid := arg.CourseID,arg.TeacherID
-	cid,_ := strconv.Atoi(courseid)
-	tid,_ := strconv.Atoi(teacherid)
+	courseid, teacherid := arg.CourseID, arg.TeacherID
+	cid, _ := strconv.Atoi(courseid)
+	tid, _ := strconv.Atoi(teacherid)
+	courseExisted, _ := database.GetOneCourseName(cid)
+	if courseExisted != "" {
+		b.Code = types.CourseNotExisted
+		c.JSON(200, b)
+		return
+	}
+	t, _ := database.GetCourseTeacher(cid)
+	if t != "" {
+		b.Code = types.CourseNotBind
+		c.JSON(200, b)
+		return
+	}
 	flag := database.UnbindTeacherCourse(tid, cid)
 	if flag != "unbind successes!" {
-		b.Code = types.CourseNotExisted
-		c.JSON(200,b)
+		b.Code = types.UnknownError
+		c.JSON(200, b)
 		return
 	}
-	b.Code = types.CourseNotBind
-	c.JSON(200,b)
+	b.Code = types.OK
+	c.JSON(200, b)
 }
