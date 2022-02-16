@@ -3,7 +3,6 @@ package scheduleCourse
 import (
 	"backend/types"
 	"github.com/gin-gonic/gin"
-	"strconv"
 )
 
 
@@ -56,14 +55,4 @@ func ScheduleCourse(c *gin.Context) {
 	b.Code = types.OK
 	b.Data = res
 	c.JSON(200,b)
-}
-
-func atoi(a string) (b int) {
-	b,_ = strconv.Atoi(a)
-	return
-}
-
-func itoa(a int) (b string) {
-	b = strconv.Itoa(a)
-	return b
 }

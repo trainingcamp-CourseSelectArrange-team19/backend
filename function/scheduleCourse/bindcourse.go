@@ -28,12 +28,26 @@ func BindCourse(c *gin.Context) {
 	courseID,TeacherID := arg.CourseID,arg.TeacherID
 	cid,_ := strconv.Atoi(courseID)
 	tid,_ := strconv.Atoi(TeacherID)
-	flag := database.BindTeacherCourse(tid,cid)
-	if flag != "bind successes!" {
+	courseExisted, _ := database.GetOneCourseName(cid)
+	if  courseExisted != ""{
 		b.Code = types.CourseNotExisted
 		c.JSON(200,b)
 		return
 	}
-	b.Code = types.CourseHasBound
+	t, schedule := database.GetCourseTeacher(cid)
+	if t == ""{
+		if schedule.TeacherID != 0{
+			b.Code = types.CourseHasBound
+			c.JSON(200,b)
+			return
+		}
+	}
+	flag := database.BindTeacherCourse(tid,cid)
+	if flag != "bind successes!" {
+		b.Code = types.UnknownError
+		c.JSON(200,b)
+		return
+	}
+	b.Code = types.OK
 	c.JSON(200,b)
 }

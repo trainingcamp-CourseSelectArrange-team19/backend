@@ -29,12 +29,26 @@ func UnBindCourse(c *gin.Context) {
 	courseid,teacherid := arg.CourseID,arg.TeacherID
 	cid,_ := strconv.Atoi(courseid)
 	tid,_ := strconv.Atoi(teacherid)
-	flag := database.UnbindTeacherCourse(tid, cid)
-	if flag != "unbind successes!" {
+	courseExisted, _ := database.GetOneCourseName(cid)
+	if  courseExisted != ""{
 		b.Code = types.CourseNotExisted
 		c.JSON(200,b)
 		return
 	}
-	b.Code = types.CourseNotBind
+	t, schedule := database.GetCourseTeacher(cid)
+	if t == ""{
+		if schedule.TeacherID == 0{
+			b.Code = types.CourseNotBind
+			c.JSON(200,b)
+			return
+		}
+	}
+	flag := database.UnbindTeacherCourse(tid, cid)
+	if flag != "unbind successes!" {
+		b.Code = types.UnknownError
+		c.JSON(200,b)
+		return
+	}
+	b.Code = types.OK
 	c.JSON(200,b)
 }
