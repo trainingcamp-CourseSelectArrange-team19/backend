@@ -49,7 +49,7 @@ func GetTeacherCourse(c *gin.Context){
 	}
 
 	b.Data = struct{ CourseList []*types.TCourse }{CourseList: tcourse}
-
+	b.Code = types.OK
 	c.JSON(200,b)
 
 }
