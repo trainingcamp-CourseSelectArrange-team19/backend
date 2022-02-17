@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +25,7 @@ func main() {
 	}()
 	defer ticker.Stop()
 	r := gin.Default()
-	pprof.Register(r)
+	//pprof.Register(r)
 	RegisterRouter(r)
 	r.Run(":80")
 }
