@@ -76,7 +76,7 @@ type GetMemberListResponse struct {
 */
 
 func GetUsers(c *gin.Context) {
-	b := types.GetMemberListResponse{Code: types.ParamInvalid}
+	b := types.GetMemberListResponse{Code: types.ParamInvalid, Data: struct{ MemberList []types.TMember }{MemberList: make([]types.TMember, 0)}}
 	var arg types.GetMemberListRequest
 	if err := c.ShouldBind(&arg); err != nil {
 		c.JSON(200, b)
@@ -88,8 +88,8 @@ func GetUsers(c *gin.Context) {
 		c.JSON(200, b)
 		return
 	}
-	b.Code = types.OK
 	var res []types.TMember
+	b.Code = types.OK
 	for i := int64(offset); i < Min(sz, int64(offset+limit)); i++ {
 		res = append(res, types.TMember{
 			UserID:   strconv.Itoa(users[i].Id),
