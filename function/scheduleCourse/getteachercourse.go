@@ -4,6 +4,7 @@ import (
 	"backend/database"
 	"backend/types"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"strconv"
 )
 
@@ -32,6 +33,26 @@ func GetTeacherCourse(c *gin.Context) {
 		return
 	}
 	TeacherID, _ := strconv.Atoi(arg.TeacherID)
+
+	flag, TmpTeacher := database.GetUserInfoById(arg.TeacherID)
+
+	if flag != "Success" {
+		b.Code = types.UserNotExisted
+		c.JSON(http.StatusOK, b)
+		return
+	}
+
+	if TmpTeacher.Type != 3 {
+		b.Code = types.UserNotExisted
+		c.JSON(http.StatusOK, b)
+		return
+	}
+
+	if TmpTeacher.IsValid != 1 {
+		b.Code = types.UserHasDeleted
+		c.JSON(http.StatusOK, b)
+		return
+	}
 
 	n, err, arr := database.GetTeacherCourse(TeacherID)
 	if err != nil {

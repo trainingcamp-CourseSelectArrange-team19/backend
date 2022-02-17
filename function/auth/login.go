@@ -82,7 +82,7 @@ func Login(c *gin.Context) {
 	}
 	// 密码正确
 	loginResponse := types.LoginResponse{
-		Code: http.StatusOK,
+		Code: types.OK,
 		Data: struct{ UserID string }{
 			UserID: strconv.Itoa(user.Id),
 		},
